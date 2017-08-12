@@ -1,4 +1,6 @@
-<?php namespace Venturecraft\Revisionable;
+<?php 
+
+namespace Venturecraft\Revisionable;
 
 /*
  * This file is part of the Revisionable package by Venture Craft
@@ -102,8 +104,8 @@ trait RevisionableTrait
      */
     public static function classRevisionHistory($limit = 100, $order = 'desc')
     {
-        return \Venturecraft\Revisionable\Revision::where('revisionable_type', get_called_class())
-            ->orderBy('updated_at', $order)->limit($limit)->get();
+        return \Venturecraft\Revisionable\Revision::where('revisionableType', get_called_class())
+            ->orderBy('updated', $order)->limit($limit)->get();
     }
 
     /**
@@ -176,14 +178,14 @@ trait RevisionableTrait
 
             foreach ($changes_to_record as $key => $change) {
                 $revisions[] = array(
-                    'revisionable_type' => $this->getMorphClass(),
-                    'revisionable_id' => $this->getKey(),
+                    'revisionableType' => $this->getMorphClass(),
+                    'revisionableId' => $this->getKey(),
                     'key' => $key,
-                    'old_value' => array_get($this->originalData, $key),
-                    'new_value' => $this->updatedData[$key],
-                    'user_id' => $this->getSystemUserId(),
-                    'created_at' => new \DateTime(),
-                    'updated_at' => new \DateTime(),
+                    'oldValue' => array_get($this->originalData, $key),
+                    'newValue' => $this->updatedData[$key],
+                    'userId' => $this->getSystemUserId(),
+                    'created' => new \DateTime(),
+                    'updated' => new \DateTime(),
                 );
             }
 
@@ -218,14 +220,14 @@ trait RevisionableTrait
         if ((!isset($this->revisionEnabled) || $this->revisionEnabled))
         {
             $revisions[] = array(
-                'revisionable_type' => $this->getMorphClass(),
-                'revisionable_id' => $this->getKey(),
-                'key' => self::CREATED_AT,
-                'old_value' => null,
-                'new_value' => $this->{self::CREATED_AT},
-                'user_id' => $this->getSystemUserId(),
-                'created_at' => new \DateTime(),
-                'updated_at' => new \DateTime(),
+                'revisionableType' => $this->getMorphClass(),
+                'revisionableId' => $this->getKey(),
+                'key' => self::CREATED,
+                'oldValue' => null,
+                'newValue' => $this->{self::CREATED},
+                'userId' => $this->getSystemUserId(),
+                'created' => new \DateTime(),
+                'updated' => new \DateTime(),
             );
 
             $revision = new Revision;
@@ -245,14 +247,14 @@ trait RevisionableTrait
             && $this->isRevisionable($this->getDeletedAtColumn())
         ) {
             $revisions[] = array(
-                'revisionable_type' => $this->getMorphClass(),
-                'revisionable_id' => $this->getKey(),
+                'revisionableType' => $this->getMorphClass(),
+                'revisionableId' => $this->getKey(),
                 'key' => $this->getDeletedAtColumn(),
-                'old_value' => null,
-                'new_value' => $this->{$this->getDeletedAtColumn()},
-                'user_id' => $this->getSystemUserId(),
-                'created_at' => new \DateTime(),
-                'updated_at' => new \DateTime(),
+                'oldValue' => null,
+                'newValue' => $this->{$this->getDeletedAtColumn()},
+                'userId' => $this->getSystemUserId(),
+                'created' => new \DateTime(),
+                'updated' => new \DateTime(),
             );
             $revision = new \Venturecraft\Revisionable\Revision;
             \DB::table($revision->getTable())->insert($revisions);
@@ -267,12 +269,7 @@ trait RevisionableTrait
     public function getSystemUserId()
     {
         try {
-            if (class_exists($class = '\SleepingOwl\AdminAuth\Facades\AdminAuth')
-                || class_exists($class = '\Cartalyst\Sentry\Facades\Laravel\Sentry')
-                || class_exists($class = '\Cartalyst\Sentinel\Laravel\Facades\Sentinel')
-            ) {
-                return ($class::check()) ? $class::getUser()->id : null;
-            } elseif (\Auth::check()) {
+            if (\Auth::check()) {
                 return \Auth::user()->getAuthIdentifier();
             }
         } catch (\Exception $e) {
