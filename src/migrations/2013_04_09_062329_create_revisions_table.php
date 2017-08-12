@@ -11,17 +11,17 @@ class CreateRevisionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('revisions', function ($table) {
+        Schema::create('revision', function ($table) {
             $table->increments('id');
-            $table->string('revisionable_type');
-            $table->integer('revisionable_id');
-            $table->integer('user_id')->nullable();
+            $table->string('revisionableType');
+            $table->integer('revisionableId');
+            $table->integer('userId')->nullable();
             $table->string('key');
-            $table->text('old_value')->nullable();
-            $table->text('new_value')->nullable();
+            $table->text('oldValue')->nullable();
+            $table->text('newValue')->nullable();
             $table->timestamps();
 
-            $table->index(array('revisionable_id', 'revisionable_type'));
+            $table->index(array('revisionableId', 'revisionableType'));
         });
     }
 
@@ -32,6 +32,6 @@ class CreateRevisionsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('revisions');
+        Schema::drop('revision');
     }
 }
